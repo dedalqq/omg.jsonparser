@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/dedalqq/omg.jsonparser.svg?branch=master)](https://travis-ci.com/dedalqq/omg.jsonparser)
 [![Go Reference](https://pkg.go.dev/badge/github.com/dedalqq/omg.jsonparser.svg)](https://pkg.go.dev/github.com/dedalqq/omg.jsonparser)
+[![Coverage Status](https://coveralls.io/repos/github/dedalqq/omg.jsonparser/badge.svg?branch=master)](https://coveralls.io/github/dedalqq/omg.jsonparser?branch=master)
 
 omg.jsonParser is a simple JSON parser with a simple condition validation. It's a wrapper on standard go JSON lib.
 
