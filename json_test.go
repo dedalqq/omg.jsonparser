@@ -136,6 +136,26 @@ func TestParseJsonBody(t *testing.T) {
 			fmt.Errorf("value [a.[1].b] is required"),
 			`{"a":[{"b":1},{"b":0}]}`,
 		},
+		{
+			`{"a": [{"b": 1}, {}]}`,
+			&struct {
+				A []struct {
+					B int `json:"b,required"`
+				} `json:"a,min:3"`
+			}{},
+			fmt.Errorf("value [a.] count of items less than expected"),
+			`{"a":null}`,
+		},
+		{
+			`{"a": [{"b": 1}, {}]}`,
+			&struct {
+				A []struct {
+					B int `json:"b,required"`
+				} `json:"a,max:1"`
+			}{},
+			fmt.Errorf("value [a.] count of items more than expected"),
+			`{"a":null}`,
+		},
 	}
 
 	for i, td := range testData {

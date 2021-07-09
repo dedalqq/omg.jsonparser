@@ -6,17 +6,22 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
 const (
 	optRequired = "required"
 	optNotEmpty = "notEmpty"
+	optMin      = "min:"
+	optMax      = "max:"
 )
 
 type fieldOpt struct {
 	required bool
 	notEmpty bool
+	min      *int
+	max      *int
 }
 
 type validError struct {
@@ -47,6 +52,22 @@ func parseTag(data string) (string, fieldOpt) {
 			opt.required = true
 		case optNotEmpty:
 			opt.notEmpty = true
+		}
+
+		if strings.HasPrefix(o, optMin) {
+			if v, err := strconv.Atoi(o[4:]); err == nil {
+				opt.min = &v
+			}
+
+			continue
+		}
+
+		if strings.HasPrefix(o, optMax) {
+			if v, err := strconv.Atoi(o[4:]); err == nil {
+				opt.max = &v
+			}
+
+			continue
 		}
 	}
 
@@ -115,7 +136,7 @@ func parseJsonObject(r io.Reader, prefix string, val reflect.Value) error {
 
 		refField := val.Field(i)
 
-		err := parseJson(bytes.NewReader(jsonValue), fmt.Sprintf("%s.", name), refField.Addr())
+		err := parseJson(bytes.NewReader(jsonValue), fmt.Sprintf("%s.", name), opts, refField.Addr())
 		if err != nil {
 			return err
 		}
@@ -128,12 +149,20 @@ func parseJsonObject(r io.Reader, prefix string, val reflect.Value) error {
 	return nil
 }
 
-func parseJsonSlice(r io.Reader, prefix string, val reflect.Value) error {
+func parseJsonSlice(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) error {
 	var data []json.RawMessage
 
 	err := json.NewDecoder(r).Decode(&data)
 	if err != nil {
 		return err
+	}
+
+	if opt.min != nil && len(data) < *opt.min {
+		return newError("count of items less than expected", prefix)
+	}
+
+	if opt.max != nil && len(data) > *opt.max {
+		return newError("count of items more than expected", prefix)
 	}
 
 	for {
@@ -148,7 +177,7 @@ func parseJsonSlice(r io.Reader, prefix string, val reflect.Value) error {
 		newVal := reflect.New(val.Type().Elem())
 		val.Set(reflect.Append(val, newVal.Elem()))
 
-		err := parseJson(bytes.NewReader(d), fmt.Sprintf("%s[%d].", prefix, i), val.Index(i).Addr())
+		err := parseJson(bytes.NewReader(d), fmt.Sprintf("%s[%d].", prefix, i), opt, val.Index(i).Addr())
 		if err != nil {
 			return err
 		}
@@ -157,13 +186,13 @@ func parseJsonSlice(r io.Reader, prefix string, val reflect.Value) error {
 	return nil
 }
 
-func parseJson(r io.Reader, prefix string, val reflect.Value) error {
+func parseJson(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) error {
 	if fieldIs(val.Type(), reflect.Struct) {
 		return parseJsonObject(r, prefix, val)
 	}
 
 	if fieldIs(val.Type(), reflect.Slice) {
-		return parseJsonSlice(r, prefix, val)
+		return parseJsonSlice(r, prefix, opt, val)
 
 	}
 
@@ -181,7 +210,7 @@ func NewDecoder(r io.Reader) *Decoder {
 
 // Decode run parsing and validation JSON from reader
 func (dec *Decoder) Decode(v interface{}) error {
-	return parseJson(dec.r, "", reflect.ValueOf(v))
+	return parseJson(dec.r, "", fieldOpt{}, reflect.ValueOf(v))
 }
 
 // Unmarshal run parsing and validation JSON

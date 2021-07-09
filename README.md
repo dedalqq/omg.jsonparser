@@ -6,7 +6,7 @@
 
 omg.jsonParser is a simple JSON parser with a simple condition validation. It's a wrapper on standard go JSON lib.
 
-## example
+## Example
 
 ```go
 package main
@@ -31,3 +31,12 @@ func main() {
 }
 
 ```
+
+## Available tags
+
+| Name        | Description                                                                        | Types |
+| ----------- | ---------------------------------------------------------------------------------- | ----- |
+| `required`  | field must be exist with any value or `null`                                       | any   |
+| `notEmpty`  | field can be not exist but if exist value must be not zero value but can be `null` | any   |
+| `min:n`     | slice must have n items or more                                                    | slice |
+| `max:n`     | slice must have n items or less                                                    | slice |
