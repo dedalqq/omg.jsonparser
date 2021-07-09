@@ -1,5 +1,10 @@
 language: go
 
+go:
+  - "1.15"
+  - "1.16"
+  - master
+
 script:
   - go test -v
   - go build
