@@ -1,5 +1,7 @@
 # omg.jsonParser
 
+[![Build Status](https://travis-ci.com/dedalqq/omg.jsonparser.svg?branch=master)](https://travis-ci.com/dedalqq/omg.jsonparser)
+
 omg.jsonParser is a simple JSON parser with a simple condition validation. It's a wrapper on standard go JSON lib.
 
 ## example
