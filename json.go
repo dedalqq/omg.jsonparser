@@ -24,6 +24,7 @@ type validError struct {
 	reason string
 }
 
+// Error returns error text
 func (e validError) Error() string {
 	return fmt.Sprintf("value [%s] %s", e.path, e.reason)
 }
@@ -173,14 +174,17 @@ type Decoder struct {
 	r io.Reader
 }
 
+// NewDecoder created and return new decoder
 func NewDecoder(r io.Reader) *Decoder {
 	return &Decoder{r: r}
 }
 
+// Decode run parsing and validation JSON from reader
 func (dec *Decoder) Decode(v interface{}) error {
 	return parseJson(dec.r, "", reflect.ValueOf(v))
 }
 
+// Unmarshal run parsing and validation JSON
 func Unmarshal(data []byte, v interface{}) error {
 	return NewDecoder(bytes.NewBuffer(data)).Decode(v)
 }
