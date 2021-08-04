@@ -78,7 +78,7 @@ func TestParseJson(t *testing.T) {
 				A string `json:"a"`
 				B string `json:"b,required,notEmpty"`
 			}{},
-			fmt.Errorf("value [b] must be not empty"),
+			nil,
 			`{"a":"b","b":""}`,
 		},
 		testData{
@@ -422,3 +422,63 @@ func TestIncorrectType(t *testing.T) {
 		},
 	)
 }
+
+// TODO add string min max tests
+
+//func BenchmarkJSONParser(b *testing.B) {
+//	jsonData := `{
+//	"a": "text",
+//	"b": null,
+//	"c": 123,
+//	"d": 3.14,
+//	"e": {
+//		"f": ["a1", "a2", "a3"]
+//	}
+//}`
+//
+//	st := struct {
+//		A string  `json:"a,required"`
+//		B *string `json:"b"`
+//		C int     `json:"c,notEmpty"`
+//		D float32 `json:"d"`
+//		E struct {
+//			F []string `json:"f,max:100"`
+//		} `json:"e"`
+//	}{}
+//
+//	for i := 0; i < b.N; i++ {
+//		err := NewDecoder(strings.NewReader(jsonData)).Decode(&st)
+//		if err != nil {
+//			b.Fail()
+//		}
+//	}
+//}
+//
+//func BenchmarkStdJSONP(b *testing.B) {
+//	jsonData := `{
+//	"a": "text",
+//	"b": null,
+//	"c": 123,
+//	"d": 3.14,
+//	"e": {
+//		"f": ["a1", "a2", "a3"]
+//	}
+//}`
+//
+//	st := struct {
+//		A string  `json:"a,required"`
+//		B *string `json:"b"`
+//		C int     `json:"c,notEmpty"`
+//		D float32 `json:"d"`
+//		E struct {
+//			F []string `json:"f,max:100"`
+//		} `json:"e"`
+//	}{}
+//
+//	for i := 0; i < b.N; i++ {
+//		err := json.NewDecoder(strings.NewReader(jsonData)).Decode(&st)
+//		if err != nil {
+//			b.Fail()
+//		}
+//	}
+//}
