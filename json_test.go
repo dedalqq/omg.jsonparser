@@ -404,6 +404,38 @@ func TestMinMax(t *testing.T) {
 			fmt.Errorf("value [a.] count of items more than expected"),
 			`{"a":null}`,
 		},
+		testData{
+			`{"a": "test"}`,
+			&struct {
+				A string `json:"a,max:5"`
+			}{},
+			nil,
+			`{"a":"test"}`,
+		},
+		testData{
+			`{"a": "test"}`,
+			&struct {
+				A string `json:"a,max:3"`
+			}{},
+			fmt.Errorf("value [a.] count of runes in a string more than expected"),
+			`{"a":""}`,
+		},
+		testData{
+			`{"a": 4}`,
+			&struct {
+				A int `json:"a,max:5"`
+			}{},
+			nil,
+			`{"a":4}`,
+		},
+		testData{
+			`{"a": 4}`,
+			&struct {
+				A int `json:"a,max:3"`
+			}{},
+			fmt.Errorf("value [a.] value more than expected"),
+			`{"a":0}`,
+		},
 	)
 }
 

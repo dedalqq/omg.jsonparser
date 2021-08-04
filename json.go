@@ -109,13 +109,13 @@ func valueIsZero(v reflect.Value) bool {
 	}
 }
 
-func validateMinMax(opt fieldOpt, prefix string, v int) error {
+func validateMinMax(opt fieldOpt, prefix string, v int, errorPrefix string) error {
 	if opt.min != nil && v < *opt.min {
-		return newError("count of items less than expected", prefix)
+		return newError(fmt.Sprintf("%s less than expected", errorPrefix), prefix)
 	}
 
 	if opt.max != nil && v > *opt.max {
-		return newError("count of items more than expected", prefix)
+		return newError(fmt.Sprintf("%s more than expected", errorPrefix), prefix)
 	}
 
 	return nil
@@ -133,6 +133,38 @@ func getString(v reflect.Value) (string, bool) {
 		}
 
 		return v.String(), true
+	}
+}
+
+func getInt(v reflect.Value) (int64, bool) {
+	for {
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+			continue
+		}
+
+		switch v.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return v.Int(), true
+		default:
+			return 0, false
+		}
+	}
+}
+
+func getUint(v reflect.Value) (uint64, bool) {
+	for {
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+			continue
+		}
+
+		switch v.Kind() {
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return v.Uint(), true
+		default:
+			return 0, false
+		}
 	}
 }
 
@@ -208,7 +240,7 @@ func parseJsonSlice(r io.Reader, prefix string, opt fieldOpt, val reflect.Value)
 		return err
 	}
 
-	err = validateMinMax(opt, prefix, len(data))
+	err = validateMinMax(opt, prefix, len(data), "count of items")
 	if err != nil {
 		return err
 	}
@@ -234,6 +266,36 @@ func parseJsonSlice(r io.Reader, prefix string, opt fieldOpt, val reflect.Value)
 	return nil
 }
 
+func parseJsonValue(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) error {
+	tempVal := reflect.New(val.Type().Elem())
+
+	err := json.NewDecoder(r).Decode(tempVal.Interface())
+	if err != nil {
+		return newError(err.Error(), prefix)
+	}
+
+	if str, ok := getString(tempVal); ok {
+		err := validateMinMax(opt, prefix, utf8.RuneCountInString(str), "count of runes in a string")
+		if err != nil {
+			return err
+		}
+	} else if i, ok := getInt(tempVal); ok {
+		err := validateMinMax(opt, prefix, (int)(i), "value")
+		if err != nil {
+			return err
+		}
+	} else if ui, ok := getUint(tempVal); ok {
+		err := validateMinMax(opt, prefix, (int)(ui), "value")
+		if err != nil {
+			return err
+		}
+	}
+
+	val.Elem().Set(tempVal.Elem())
+
+	return nil
+}
+
 func parseJson(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) error {
 	if fieldIs(val.Type(), reflect.Struct) {
 		return parseJsonObject(r, prefix, val)
@@ -243,23 +305,7 @@ func parseJson(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) erro
 		return parseJsonSlice(r, prefix, opt, val)
 	}
 
-	tempVal := reflect.New(val.Type().Elem())
-
-	err := json.NewDecoder(r).Decode(tempVal.Interface())
-	if err != nil {
-		return newError(err.Error(), prefix)
-	}
-
-	if str, ok := getString(tempVal); ok {
-		err := validateMinMax(opt, prefix, utf8.RuneCountInString(str))
-		if err != nil {
-			return err
-		}
-	}
-
-	val.Elem().Set(tempVal.Elem())
-
-	return nil
+	return parseJsonValue(r, prefix, opt, val)
 }
 
 type Decoder struct {
