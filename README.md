@@ -55,14 +55,14 @@ type data struct {
 
 ## Available tags options
 
-| Name        | Types  | Description                                                                            |
-| ----------- | ------ | -------------------------------------------------------------------------------------- |
-| `required`  | any    | The field must be exist with any value or `null`                                       |
-| `notEmpty`  | any    | The field can be not exist but if exist value must be not zero value but can be `null` |
-| `notNull`   | any    | The field should not be null, but may not exist                                        |
-| `min:n`     | slice  | The slice must have `n` items or more                                                  |
-| `max:n`     | slice  | The slice must have `n` items or less                                                  |
-| `min:n`     | string | The string must have `n` runes or more                                                 |
-| `max:n`     | string | The string must have `n` runes or less                                                 |
-| `min:n`     | int    | The value must be equals `n` or more                                                   |
-| `max:n`     | uint   | The value must be equals `n` or less                                                   |
+| Name        | Types    | Description                                                                            |
+| ----------- | -------- | -------------------------------------------------------------------------------------- |
+| `required`  | any      | The field must be exist with any value or `null`                                       |
+| `notEmpty`  | any      | The field can be not exist but if exist value must be not zero value but can be `null` |
+| `notNull`   | any      | The field should not be null, but may not exist                                        |
+| `min:n`     | slice    | The slice must have `n` items or more                                                  |
+| `max:n`     | slice    | The slice must have `n` items or less                                                  |
+| `min:n`     | string   | The string must have `n` runes or more                                                 |
+| `max:n`     | string   | The string must have `n` runes or less                                                 |
+| `min:n`     | int/uint | The value must be equals `n` or more                                                   |
+| `max:n`     | int/uint | The value must be equals `n` or less                                                   |
