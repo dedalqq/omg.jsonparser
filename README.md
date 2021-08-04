@@ -47,9 +47,9 @@ package main
 
 type data struct {
     F1 string   `json:"f1,notEmpty"`          // the field must be not empty
-	F2 string   `json:"f2,notEmpty,required"` // the field is required and must be not empty but may be the null value
-	F3 string   `json:"f3,notEmpty,notNull"`  // the field must be not empty and not null but may not exist
-	F4 []string `json:"f4,notNull,min:3"`     // the field must be not null and contains more 3 items but may not exist
+    F2 string   `json:"f2,notEmpty,required"` // the field is required and must be not empty but may be the null value
+    F3 string   `json:"f3,notEmpty,notNull"`  // the field must be not empty and not null but may not exist
+    F4 []string `json:"f4,notNull,min:3"`     // the field must be not null and contains more 3 items but may not exist
 }
 ```
 
