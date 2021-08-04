@@ -8,11 +8,13 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
 	optRequired = "required"
 	optNotEmpty = "notEmpty"
+	optNotNull  = "notNull"
 	optMin      = "min:"
 	optMax      = "max:"
 )
@@ -20,6 +22,7 @@ const (
 type fieldOpt struct {
 	required bool
 	notEmpty bool
+	notNull  bool
 	min      *int
 	max      *int
 }
@@ -52,6 +55,8 @@ func parseTag(data string) (string, fieldOpt) {
 			opt.required = true
 		case optNotEmpty:
 			opt.notEmpty = true
+		case optNotNull:
+			opt.notNull = true
 		}
 
 		if strings.HasPrefix(o, optMin) {
@@ -86,6 +91,48 @@ func fieldIs(t reflect.Type, kind reflect.Kind) bool {
 		}
 
 		return false
+	}
+}
+
+func valueIsZero(v reflect.Value) bool {
+	for {
+		if v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				return false
+			}
+
+			v = v.Elem()
+			continue
+		}
+
+		return v.IsZero()
+	}
+}
+
+func validateMinMax(opt fieldOpt, prefix string, v int) error {
+	if opt.min != nil && v < *opt.min {
+		return newError("count of items less than expected", prefix)
+	}
+
+	if opt.max != nil && v > *opt.max {
+		return newError("count of items more than expected", prefix)
+	}
+
+	return nil
+}
+
+func getString(v reflect.Value) (string, bool) {
+	for {
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+			continue
+		}
+
+		if v.Kind() != reflect.String {
+			return "", false
+		}
+
+		return v.String(), true
 	}
 }
 
@@ -125,8 +172,8 @@ func parseJsonObject(r io.Reader, prefix string, val reflect.Value) error {
 			name, opts = parseTag(tag)
 		}
 
-		jsonValue, ok := data[name]
-		if !ok {
+		jsonValue, valueExist := data[name]
+		if !valueExist {
 			if opts.required {
 				return newError("is required", prefix, name)
 			}
@@ -134,14 +181,18 @@ func parseJsonObject(r io.Reader, prefix string, val reflect.Value) error {
 			continue
 		}
 
+		if opts.notNull && string(jsonValue) == "null" {
+			return newError("must be not null", prefix, name)
+		}
+
 		refField := val.Field(i)
 
-		err := parseJson(bytes.NewReader(jsonValue), fmt.Sprintf("%s.", name), opts, refField.Addr())
+		err := parseJson(bytes.NewReader(jsonValue), fmt.Sprintf("%s%s.", prefix, name), opts, refField.Addr())
 		if err != nil {
 			return err
 		}
 
-		if opts.notEmpty && refField.IsZero() {
+		if opts.notEmpty && valueIsZero(refField) && string(jsonValue) != "null" {
 			return newError("must be not empty", prefix, name)
 		}
 	}
@@ -157,12 +208,9 @@ func parseJsonSlice(r io.Reader, prefix string, opt fieldOpt, val reflect.Value)
 		return err
 	}
 
-	if opt.min != nil && len(data) < *opt.min {
-		return newError("count of items less than expected", prefix)
-	}
-
-	if opt.max != nil && len(data) > *opt.max {
-		return newError("count of items more than expected", prefix)
+	err = validateMinMax(opt, prefix, len(data))
+	if err != nil {
+		return err
 	}
 
 	for {
@@ -193,10 +241,25 @@ func parseJson(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) erro
 
 	if fieldIs(val.Type(), reflect.Slice) {
 		return parseJsonSlice(r, prefix, opt, val)
-
 	}
 
-	return json.NewDecoder(r).Decode(val.Interface())
+	tempVal := reflect.New(val.Type().Elem())
+
+	err := json.NewDecoder(r).Decode(tempVal.Interface())
+	if err != nil {
+		return newError(err.Error(), prefix)
+	}
+
+	if str, ok := getString(tempVal); ok {
+		err := validateMinMax(opt, prefix, utf8.RuneCountInString(str))
+		if err != nil {
+			return err
+		}
+	}
+
+	val.Elem().Set(tempVal.Elem())
+
+	return nil
 }
 
 type Decoder struct {

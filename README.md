@@ -34,9 +34,12 @@ func main() {
 
 ## Available tags
 
-| Name        | Description                                                                        | Types |
-| ----------- | ---------------------------------------------------------------------------------- | ----- |
-| `required`  | field must be exist with any value or `null`                                       | any   |
-| `notEmpty`  | field can be not exist but if exist value must be not zero value but can be `null` | any   |
-| `min:n`     | slice must have n items or more                                                    | slice |
-| `max:n`     | slice must have n items or less                                                    | slice |
+| Name        | Types  | Description                                                                            |
+| ----------- | ------ | -------------------------------------------------------------------------------------- |
+| `required`  | any    | The field must be exist with any value or `null`                                       |
+| `notEmpty`  | any    | The field can be not exist but if exist value must be not zero value but can be `null` |
+| `notNull`   | any    | The field should not be null, but may not exist                                        |
+| `min:n`     | slice  | The slice must have n items or more                                                    |
+| `max:n`     | slice  | The slice must have n items or less                                                    |
+| `min:n`     | string | The string must have n runes or more                                                   |
+| `max:n`     | string | The string must have n runes or less                                                   |
