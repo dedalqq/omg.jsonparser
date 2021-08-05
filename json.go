@@ -308,6 +308,7 @@ func parseJson(r io.Reader, prefix string, opt fieldOpt, val reflect.Value) erro
 	return parseJsonValue(r, prefix, opt, val)
 }
 
+// Decoder is a struct for parsing and validation JSON
 type Decoder struct {
 	r io.Reader
 }
@@ -322,7 +323,7 @@ func (dec *Decoder) Decode(v interface{}) error {
 	return parseJson(dec.r, "", fieldOpt{}, reflect.ValueOf(v))
 }
 
-// Unmarshal run parsing and validation JSON
+// Unmarshal run parsing and validation JSON using default decoder
 func Unmarshal(data []byte, v interface{}) error {
 	return NewDecoder(bytes.NewBuffer(data)).Decode(v)
 }
