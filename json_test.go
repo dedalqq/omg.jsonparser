@@ -458,7 +458,7 @@ func TestMinMax(t *testing.T) {
 				A int `json:"a,max:5"`
 			}{},
 			nil,
-			`{"a":4}`,
+			`{"a":0}`,
 		},
 		testData{
 			`{"a": null}`,
@@ -474,7 +474,7 @@ func TestMinMax(t *testing.T) {
 				A int `json:"a,max:5"`
 			}{},
 			nil,
-			`{"a":4}`,
+			`{"a":0}`,
 		},
 		testData{
 			`{}`,
