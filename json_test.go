@@ -379,6 +379,22 @@ func TestParseSlice(t *testing.T) {
 			fmt.Errorf("value [a.[1].b] is required"),
 			`{"a":[{"b":1},{"b":0}]}`,
 		},
+		testData{
+			`{"a": []}`,
+			&struct {
+				A []int `json:"a,notEmpty"`
+			}{},
+			fmt.Errorf("value [a] must be not empty"),
+			`{"a":null}`,
+		},
+		testData{
+			`{"a": null}`,
+			&struct {
+				A []int `json:"a,notEmpty"`
+			}{},
+			nil,
+			`{"a":null}`,
+		},
 	)
 }
 
@@ -434,6 +450,38 @@ func TestMinMax(t *testing.T) {
 				A int `json:"a,max:3"`
 			}{},
 			fmt.Errorf("value [a.] value more than expected"),
+			`{"a":0}`,
+		},
+		testData{
+			`{"a": null}`,
+			&struct {
+				A int `json:"a,max:5"`
+			}{},
+			nil,
+			`{"a":4}`,
+		},
+		testData{
+			`{"a": null}`,
+			&struct {
+				A int `json:"a,max:3"`
+			}{},
+			nil,
+			`{"a":0}`,
+		},
+		testData{
+			`{}`,
+			&struct {
+				A int `json:"a,max:5"`
+			}{},
+			nil,
+			`{"a":4}`,
+		},
+		testData{
+			`{}`,
+			&struct {
+				A int `json:"a,max:3"`
+			}{},
+			nil,
 			`{"a":0}`,
 		},
 	)

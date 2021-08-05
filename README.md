@@ -59,6 +59,7 @@ type data struct {
 | ----------- | -------- | -------------------------------------------------------------------------------------- |
 | `required`  | any      | The field must be exist with any value or `null`                                       |
 | `notEmpty`  | any      | The field can be not exist but if exist value must be not zero value but can be `null` |
+| `notEmpty`  | slice    | The field must have one element or more but may be `null` or not exist                 |
 | `notNull`   | any      | The field should not be null, but may not exist                                        |
 | `min:n`     | slice    | The slice must have `n` items or more                                                  |
 | `max:n`     | slice    | The slice must have `n` items or less                                                  |
