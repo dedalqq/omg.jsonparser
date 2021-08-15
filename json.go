@@ -15,6 +15,7 @@ const (
 	optRequired = "required"
 	optNotEmpty = "notEmpty"
 	optNotNull  = "notNull"
+	optUniq     = "uniq"
 	optMin      = "min:"
 	optMax      = "max:"
 )
@@ -23,6 +24,7 @@ type fieldOpt struct {
 	required bool
 	notEmpty bool
 	notNull  bool
+	uniq     bool
 	min      *int
 	max      *int
 }
@@ -57,6 +59,8 @@ func parseTag(data string) (string, fieldOpt) {
 			opt.notEmpty = true
 		case optNotNull:
 			opt.notNull = true
+		case optUniq:
+			opt.uniq = true
 		}
 
 		if strings.HasPrefix(o, optMin) {
@@ -146,22 +150,8 @@ func getInt(v reflect.Value) (int64, bool) {
 		switch v.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			return v.Int(), true
-		default:
-			return 0, false
-		}
-	}
-}
-
-func getUint(v reflect.Value) (uint64, bool) {
-	for {
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
-			continue
-		}
-
-		switch v.Kind() {
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return v.Uint(), true
+			return (int64)(v.Uint()), true
 		default:
 			return 0, false
 		}
@@ -253,6 +243,18 @@ func parseJsonSlice(r io.Reader, prefix string, opt fieldOpt, val reflect.Value)
 		val = val.Elem()
 	}
 
+	if opt.uniq {
+		if val.Type().Elem().Kind() == reflect.String {
+			for i, v := range data {
+				for j := i + 1; j < len(data); j++ {
+					if bytes.Compare(v, data[j]) == 0 {
+						return newError("contains repeated values", prefix)
+					}
+				}
+			}
+		}
+	}
+
 	for i, d := range data {
 		newVal := reflect.New(val.Type().Elem())
 		val.Set(reflect.Append(val, newVal.Elem()))
@@ -281,11 +283,6 @@ func parseJsonValue(r io.Reader, prefix string, opt fieldOpt, val reflect.Value)
 		}
 	} else if i, ok := getInt(tempVal); ok {
 		err := validateMinMax(opt, prefix, (int)(i), "value")
-		if err != nil {
-			return err
-		}
-	} else if ui, ok := getUint(tempVal); ok {
-		err := validateMinMax(opt, prefix, (int)(ui), "value")
 		if err != nil {
 			return err
 		}

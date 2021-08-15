@@ -47,10 +47,10 @@ Here are some the tag examples:
 package main
 
 type data struct {
-    F1 string   `json:"f1,notEmpty"`          // the field must be not empty
-    F2 string   `json:"f2,notEmpty,required"` // the field is required and must be not empty but may be the null value
-    F3 string   `json:"f3,notEmpty,notNull"`  // the field must be not empty and not null but may not exist
-    F4 []string `json:"f4,notNull,min:3"`     // the field must be not null and contains 3 or more items but may not exist
+    F1 string   `json:"f1,notEmpty"`          // the field must be not empty but can be "null" or may not exist
+    F2 string   `json:"f2,notEmpty,required"` // the field is required and must be not empty but may be the "null" value
+    F3 string   `json:"f3,notEmpty,notNull"`  // the field must be not empty and not "null" but may not exist
+    F4 []string `json:"f4,notNull,min:3"`     // the field must be not "null" and contains 3 or more items but may not exist
 }
 ```
 
@@ -62,6 +62,7 @@ type data struct {
 | `notEmpty`  | any      | The field can be not exist but if exist value must be not zero value but can be `null` |
 | `notEmpty`  | slice    | The field must have one element or more but may be `null` or not exist                 |
 | `notNull`   | any      | The field should not be null, but may not exist                                        |
+| `uniq`      | []string | The strings slice must contains only unique strings                                    |
 | `min:n`     | slice    | The slice must have `n` items or more                                                  |
 | `max:n`     | slice    | The slice must have `n` items or less                                                  |
 | `min:n`     | string   | The string must have `n` runes or more                                                 |

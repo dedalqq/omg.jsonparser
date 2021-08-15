@@ -55,6 +55,14 @@ func TestParseJson(t *testing.T) {
 			`{"a":"b"}`,
 		},
 		testData{
+			`{"A": "b"}`,
+			&struct {
+				A string
+			}{},
+			nil,
+			`{"A":"b"}`,
+		},
+		testData{
 			`{"a": "b"}`,
 			&struct {
 				A string `json:"a"`
@@ -294,6 +302,14 @@ func TestParsPointer(t *testing.T) {
 			nil,
 			`{"a":123}`,
 		},
+		testData{
+			`{"a": 123}`,
+			&struct {
+				A *uint `json:"a"`
+			}{},
+			nil,
+			`{"a":123}`,
+		},
 	)
 }
 
@@ -501,4 +517,71 @@ func TestIncorrectType(t *testing.T) {
 			`{"a":{"b":""}}`,
 		},
 	)
+}
+
+func TestUniq(t *testing.T) {
+	test(
+		t,
+		testData{
+			`{"a": []}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			nil,
+			`{"a":null}`,
+		},
+		testData{
+			`{"a": ["b"]}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			nil,
+			`{"a":["b"]}`,
+		},
+		testData{
+			`{"a": ["b", "c"]}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			nil,
+			`{"a":["b","c"]}`,
+		},
+		testData{
+			`{"a": ["b", "c", "d"]}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			nil,
+			`{"a":["b","c","d"]}`,
+		},
+		testData{
+			`{"a": ["a", "a"]}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			fmt.Errorf("value [a.] contains repeated values"),
+			`{"a":null}`,
+		},
+		testData{
+			`{"a": ["b", "c", "d", "c"]}`,
+			&struct {
+				A []string `json:"a,uniq"`
+			}{},
+			fmt.Errorf("value [a.] contains repeated values"),
+			`{"a":null}`,
+		},
+	)
+}
+
+func TestUnmarshal(t *testing.T) {
+	data := []byte(`{"a": "b"}`)
+
+	st := struct {
+		A string `json:"a"`
+	}{}
+
+	err := Unmarshal(data, &st)
+	if err != nil {
+		t.Fail()
+	}
 }
