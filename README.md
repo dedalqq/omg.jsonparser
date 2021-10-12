@@ -1,6 +1,6 @@
 # omg.jsonParser
 
-[![Build Status](https://travis-ci.com/dedalqq/omg.jsonparser.svg?branch=master)](https://travis-ci.com/dedalqq/omg.jsonparser)
+[![Go](https://github.com/dedalqq/omg.jsonparser/actions/workflows/go.yml/badge.svg)](https://github.com/dedalqq/omg.jsonparser/actions/workflows/go.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/dedalqq/omg.jsonparser.svg)](https://pkg.go.dev/github.com/dedalqq/omg.jsonparser)
 [![Coverage Status](https://coveralls.io/repos/github/dedalqq/omg.jsonparser/badge.svg?branch=master)](https://coveralls.io/github/dedalqq/omg.jsonparser?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dedalqq/omg.jsonparser)](https://goreportcard.com/report/github.com/dedalqq/omg.jsonparser)
